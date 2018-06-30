@@ -39,9 +39,26 @@ class Shell {
     })
 
     term.addEventListener('keydown', (evt) => {
+      // Delete or space is pressed
+      if (evt.keyCode === 8 || evt.keyCode === 32) {
+        evt.target.parentNode.parentNode.querySelector('.suggestion').innerHTML = '';
+      }
+
       // a tab is pressed
       if (evt.keyCode === 9) {
-        evt.preventDefault()
+        evt.preventDefault();
+
+        const prompt = evt.target;
+        const input = prompt.textContent.split(/\s/);
+        const cmd = input[0];
+        const args = input[1];
+
+        if (args !== undefined) {
+          const suggestion = this.commands.autocomplete(args);
+          
+          evt.target.parentNode.parentNode.querySelector('.suggestion').innerHTML = `${cmd}${String.fromCharCode(160)}${suggestion}`;
+        }
+
       // escape key is pressed
       } else if (evt.keyCode === 27) {
         $('.terminal-window').toggleClass('fullscreen')
@@ -80,7 +97,7 @@ class Shell {
   }
 
   resetPrompt (term, prompt) {
-    const newPrompt = prompt.parentNode.cloneNode(true)
+    const newPrompt = prompt.parentNode.parentNode.cloneNode(true)
     prompt.setAttribute('contenteditable', false)
     if (this.prompt) {
       newPrompt.querySelector('.prompt').textContent = this.prompt

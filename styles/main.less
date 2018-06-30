@@ -87,10 +87,31 @@ body {
     display: block;
   }
 
+  .hidden {
+    display: inherit;
+    margin: 1em 0;
+  }
+
+  .input-container {
+    position: relative;
+    display: inline;
+    left: 10px;
+  }
+
   .input {
+    position: absolute;
     outline-color:  #30353a;
     border:         none;
     display:        inline-block;
+    width: 500px;
+  }
+
+  .suggestion {
+    position: absolute;
+    outline-color:  #30353a;
+    border:         none;
+    display:        inline-block;
+    opacity: 0.45;
   }
 
   .root {
