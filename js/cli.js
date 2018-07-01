@@ -17,6 +17,7 @@ const commands = {}
 let systemData = {}
 const rootPath = 'users/codebytere/root';
 const previousSuggestions = new Set();
+let previousInput = "";
 
 const getDirectory = () => localStorage.directory
 const setDirectory = (dir) => { localStorage.directory = dir }
@@ -92,21 +93,28 @@ reach edge nodes in the graph of possible suggestions) */
 commands.autocomplete = (currentInput) => {
   const dir = getDirectory();
 
+  /* If the user hasn't entered any text to match a file against then assume
+  they want to loop through all the available files */
   if (currentInput === "") {
     for (let i=0; i < struct[dir].length; i++) {
       const possibleSuggestion = struct[dir][i];
       if (previousSuggestions.has(possibleSuggestion)) continue;
 
       previousSuggestions.add(possibleSuggestion);
-      return possibleSuggestion;
+      return possibleSuggestion + ".txt";
     }
 
+    // We have already made all possible suggestions so it's time to loop back.
     const firstFileMatch = struct[dir][0];
 
     previousSuggestions.clear();
     previousSuggestions.add(firstFileMatch);
 
-    return firstFileMatch;
+    return firstFileMatch + ".txt";
+  }
+
+  if (previousInput !== currentInput) {
+    previousSuggestions.clear();
   }
 
   const currentInputKey = currentInput.split('.')[0];
@@ -149,7 +157,9 @@ commands.autocomplete = (currentInput) => {
   // Clearing the previous suggestions once all suggestions have been made allows for looping 
   if (previousSuggestions.size === numPossibleSuggestions) previousSuggestions.clear();
 
-  return matchingFile;
+  previousInput = currentInput;
+
+  return matchingFile ? matchingFile + ".txt" : matchingFile;
 }
 
 // initialize cli

@@ -39,21 +39,30 @@ class Shell {
     })
 
     term.addEventListener('keydown', (evt) => {
+      const prompt = evt.target;
+      const suggestionEl = prompt.parentNode.parentNode.querySelector('.suggestion');
+
       // Delete or space is pressed
       if (evt.keyCode === 8 || evt.keyCode === 32) {
-        evt.target.parentNode.parentNode.querySelector('.suggestion').innerHTML = '';
+        suggestionEl.innerHTML = '';
+      }
+
+      if (evt.keyCode === 39 && suggestionEl.textContent !== "") {
+        prompt.innerHTML = suggestionEl.innerHTML;
+        suggestionEl.innerHTML = '';
+
+        this.placeCaretAtEnd(prompt);
       }
 
       // a tab is pressed
       if (evt.keyCode === 9) {
         evt.preventDefault();
 
-        const prompt = evt.target;
         const input = prompt.textContent.split(/\s/);
         const cmd = input[0];
         const args = input[1];
 
-        if (args !== undefined) {
+        if (cmd === "cat" && args !== undefined) {
           const suggestion = this.commands.autocomplete(args);
           
           evt.target.parentNode.parentNode.querySelector('.suggestion').innerHTML = `${cmd}${String.fromCharCode(160)}${suggestion}`;
@@ -66,12 +75,26 @@ class Shell {
     })
 
     term.addEventListener('keypress', (evt) => {
+      const prompt = evt.target;
+      const input = prompt.textContent.trim().split(/\s/);
+      const cmd = input[0];
+      const args = input[1];
+      const suggestionEl = evt.target.parentNode.parentNode.querySelector('.suggestion');
+      const currentSuggestion = suggestionEl.textContent;
+      const suggestionExists = currentSuggestion !== "";
+
+      if (suggestionExists) {
+        const letterIndex = args ? args.length : 0;
+        const nextSuggestionLetter = currentSuggestion.trim().split(/\s/)[1].charAt(letterIndex);
+      
+        if (String.fromCharCode(evt.keyCode) !== nextSuggestionLetter) {
+          suggestionEl.innerHTML = "";
+        }
+      }
+
+
       if (evt.keyCode === 13) {
-        localStorage.historyIndex = 0
-        const prompt = evt.target
-        const input = prompt.textContent.trim().split(' ')
-        const cmd = input[0]
-        const args = input[1]
+        localStorage.historyIndex = 0;
 
         if (cmd === 'clear') {
           this.clearConsole()
@@ -86,6 +109,24 @@ class Shell {
         evt.preventDefault()
       }
     })
+  }
+
+  placeCaretAtEnd(el) {
+    el.focus();
+    if (typeof window.getSelection != "undefined"
+            && typeof document.createRange != "undefined") {
+        var range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+    } else if (typeof document.body.createTextRange != "undefined") {
+        var textRange = document.body.createTextRange();
+        textRange.moveToElementText(el);
+        textRange.collapse(false);
+        textRange.select();
+    }
   }
 
   runCommand (cmd, args) {
