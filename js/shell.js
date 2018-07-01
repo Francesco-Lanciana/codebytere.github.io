@@ -47,6 +47,7 @@ class Shell {
         suggestionEl.innerHTML = '';
       }
 
+      // The right arrow key is pressed
       if (evt.keyCode === 39 && suggestionEl.textContent !== "") {
         prompt.innerHTML = suggestionEl.innerHTML;
         suggestionEl.innerHTML = '';
